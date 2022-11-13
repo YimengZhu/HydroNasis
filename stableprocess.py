@@ -2,6 +2,7 @@ import pandas as pd
 import time
 from tqdm import tqdm
 import os
+import json
 
 def operate1(data):
     '''
@@ -118,6 +119,8 @@ def data_create(path, filepackage_list):
         dict1[package] = []
         sys_list = []
         for file in os.listdir(os.path.join(path,package)):
+            if file == '.DS_Store':
+                continue
             print(f'读取文件：{os.path.join(os.path.join(path,package,file))}')
             current_file = os.path.join(os.path.join(path,package,file))
             data = pd.read_csv(current_file)
@@ -141,9 +144,24 @@ def data_create(path, filepackage_list):
 if __name__ == "__main__":
     """调用示例"""
     """上述调用示例运行较为缓慢，选手可进行优化加速"""
-    path = './data/'
-    file_test = data_create(path, ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7'])
+    # path = './data/'
+    # file_test = data_create(path, ['M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7'])
     # file_test 为一字典，其中包含索要处理系统，keys：'M1', 'M2', 'M3', 'M4', 'M5', 'M6', 'M7'
     # file_test['M1]为一列表，其中包含n组稳态过程的数据
     # file_test['M1][0]为一dict，表示M1系统第一组稳态，keys：'data', 'v_mean'。其中，data为对应数据，v_mean为该组系统性能均值。
     # 每组v_mean，对应给出的训练集答案
+    path = 'example/'
+    file_test = data_create(path, ['M1'])
+
+    if not os.path.exists('processed'):
+        os.makedirs('processed')
+
+    for key in file_test.keys():
+        for idx, states in enumerate(file_test[key]):
+
+            data_frame, v_mean = states['data'], states['v_mean']
+            data_json = json.loads(data_frame.to_json(orient='index'))
+            data_json['v_mean'] = v_mean
+
+            with open(f'processed/{key}_{idx}.json', 'w', encoding='utf8') as fd:
+                json.dump(data_json, fd, ensure_ascii=False)

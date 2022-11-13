@@ -1,0 +1,8 @@
+name: HydroNasis
+channels:
+  - anaconda
+  - defaults
+dependencies:
+  - jupyter
+  - pandas
+  - tqdm
