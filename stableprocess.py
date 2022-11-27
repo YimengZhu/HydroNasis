@@ -1,10 +1,15 @@
 import pandas as pd
 import time
+#导入time库，时间处理，时间格式化，计时
 from tqdm import tqdm
+#tqdm进度条显示
 import os
+#导入os模块，os模块提供各种 Python 程序与操作系统进行交互的接口
 import json
-
+#JSON是用于存储和交换数据的语法。
+\
 def operate1(data):
+    #定义一个名为operate1的函数，其参数为data
     '''
     筛选留下“FCU送VCU心跳”连续变化
     （连续变化是指相邻60行内有变化，若大于60行无变化，
@@ -13,21 +18,30 @@ def operate1(data):
     data['diff'] = data["FCU送VCU心跳"].diff()
     starttime = time.time()
     for i in range(len(data)):
+        #给i赋值
         data_i = data.iloc[i:i+60,:]
+        #先行后列，行取60行，列取全部
         if len(data_i) == 0:
             print('break1')
             break
         if data_i["FCU送VCU心跳"].nunique()==1:
+            #如果返回每列的唯一值的数量唯一，说明60行内无变化，diff为0，因此只取第一行
             data_i_ = data.iloc[i+1:, :]
+            #表示无变化的60行中第一行的索引
             data_i_same = data_i_[data_i_['diff'].map(lambda x:x!=0)]
+            #匿名函数lambda筛选x不为0
             if len(data_i_same) == 0:
                 data.drop(data.index[i+1:],inplace=True)
+                #drop函数，删除以index
+                # index() 函数用于从列表中找出某个值第一个匹配项的索引位置。
+                # inplace = True：不创建新的对象，直接对原始对象进行修改
                 print('break2')
                 break
             data_i_index_end = data_i_same.index[0]
             data.drop(index = range(data_i_.index[0], data_i_index_end),inplace=True)
     endtime = time.time()
     print('operate1-运行的时间为:{}secs'.format(round(endtime - starttime, 2)))
+    #打印运行时间
     return data
 
 def operate2(data):
@@ -37,6 +51,7 @@ def operate2(data):
     
      '''
     data = data.loc[(data['最高警告等级']==1) | (data['最高警告等级']==0),:]
+    #筛选并取并集
     return data 
 
 def operate3(data):
@@ -119,7 +134,7 @@ def data_create(path, filepackage_list):
         dict1[package] = []
         sys_list = []
         for file in os.listdir(os.path.join(path,package)):
-            if file == '.DS_Store':
+            if file == '.DS3ww_Store':
                 continue
             print(f'读取文件：{os.path.join(os.path.join(path,package,file))}')
             current_file = os.path.join(os.path.join(path,package,file))
@@ -151,17 +166,21 @@ if __name__ == "__main__":
     # file_test['M1][0]为一dict，表示M1系统第一组稳态，keys：'data', 'v_mean'。其中，data为对应数据，v_mean为该组系统性能均值。
     # 每组v_mean，对应给出的训练集答案
     path = 'example/'
+    #下面的代码是选择有用的数值并计算出稳态均值
     file_test = data_create(path, ['M1'])
-
     if not os.path.exists('processed'):
+        #创建了processed的文件
         os.makedirs('processed')
 
     for key in file_test.keys():
+        #把所有结果记录
         for idx, states in enumerate(file_test[key]):
 
             data_frame, v_mean = states['data'], states['v_mean']
             data_json = json.loads(data_frame.to_json(orient='index'))
             data_json['v_mean'] = v_mean
+            #形成json字符串
 
             with open(f'processed/{key}_{idx}.json', 'w', encoding='utf8') as fd:
                 json.dump(data_json, fd, ensure_ascii=False)
+                #把json写到文件里
