@@ -140,13 +140,7 @@ if __name__ == "__main__":
     """调用示例"""
     """上述调用示例运行较为缓慢，选手可进行优化加速"""
 
-    # file_length = []
     des_path = '/home/yimeng/data/HydroNasis/train/processed'
-    # for file in sorted(os.listdir(des_path)):
-    #     current_file = os.path.join(os.path.join(des_path,file))
-    #     data = pd.read_pickle(current_file)
-    #     file_length.append(data.shape[0])
-    # print(sum(file_length))
     if not os.path.exists(des_path):
         os.makedirs(des_path)
 
